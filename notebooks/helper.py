@@ -2,6 +2,8 @@ import random
 import cv2 as cv
 import csv 
 import os
+import numpy as np
+import torch
 
 # Load test images
 def get_color_image_paths(csv_path):
@@ -31,3 +33,17 @@ def random_color_images_batch(batch_size, csv_path):
 def random_image(csv_path):
     images = random_color_images_batch(batch_size=1, csv_path=csv_path)
     return images[0] if images else None
+
+
+def process_image_for_model(images):
+    # Resize the images
+    images_resized = [cv.resize(image, (192,192)) for image in images]
+    # Stack images into a single numpy array of shape [batch, 256, 256, channels]
+    images_resized = np.stack(images_resized)
+    # Convert numpy array to tensor and Normalize
+    tensor_images = torch.tensor(images_resized, dtype=torch.float32) / 255.0
+    # Reorder the dimensions
+    tensor_images = tensor_images.permute(0, 3, 1, 2)
+    return tensor_images
+    
+    
